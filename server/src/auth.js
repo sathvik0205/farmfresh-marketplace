@@ -1,0 +1,3 @@
+const jwt=require('jsonwebtoken');const {User}=require('./models');
+async function protect(req,res,next){try{const h=req.headers.authorization||'';if(!h.startsWith('Bearer '))return res.status(401).json({message:'Please log in.'});const p=jwt.verify(h.slice(7),process.env.JWT_SECRET);req.user=await User.findById(p.id).select('-passwordHash');if(!req.user)return res.status(401).json({message:'Account not found.'});next()}catch(e){res.status(401).json({message:'Invalid or expired session.'})}}
+const allow=(...roles)=>(req,res,next)=>roles.includes(req.user.role)?next():res.status(403).json({message:'Permission denied.'});module.exports={protect,allow};
